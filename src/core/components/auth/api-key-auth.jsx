@@ -1,6 +1,21 @@
 import React from "react"
 import PropTypes from "prop-types"
 
+function getCookie(name) {
+  var st = ""
+  var ed = ""
+  if (document.cookie.length > 0) {
+      st = document.cookie.indexOf(name + "=")
+      if (st != -1) {
+          st = st + name.length + 1
+          ed = document.cookie.indexOf(";", st)
+          if (ed == -1) ed = document.cookie.length
+          return unescape(document.cookie.substring(st, ed))
+      }
+  }
+  return ""
+}
+
 export default class ApiKeyAuth extends React.Component {
   static propTypes = {
     authorized: PropTypes.object,
@@ -14,7 +29,20 @@ export default class ApiKeyAuth extends React.Component {
   constructor(props, context) {
     super(props, context)
     let { name, schema } = this.props
-    let value = this.getValue()
+    let value: string
+    if (schema.get("in") !== "cookie") {
+       value = this.getValue()
+    } else {
+      value = getCookie(schema.get("name"))
+      let { onChange } = this.props
+      onChange({
+        name: name,
+        schema: schema,
+        value: value
+      })
+    }
+
+ 
 
     this.state = {
       name: name,
@@ -70,7 +98,7 @@ export default class ApiKeyAuth extends React.Component {
           <label>Value:</label>
           {
             value ? <code> ****** </code>
-                  : <Col><Input type="text" onChange={ this.onChange }/></Col>
+                  : <Col><Input type="text" disabled={schema.get("in")==="cookie"} value={this.state.value} onChange={ this.onChange }/></Col>
           }
         </Row>
         {

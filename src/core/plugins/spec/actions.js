@@ -362,6 +362,13 @@ export const executeRequest = (req) =>
       } else{
         req.requestBody = requestBody
       }
+      req.userFetch = function (url, options) {
+        if (options.headers.Cookie) {
+          delete options.headers.Cookie
+          options.credentials = "include"
+        }
+        return fetch(url, options)
+      }
     }
 
     let parsedRequest = Object.assign({}, req)
